@@ -11,7 +11,7 @@
 # Porject
 autotest_bsn_c.log*
 *.log
-temporary*
+# temporary*
 image/
 log/
 heima_page/

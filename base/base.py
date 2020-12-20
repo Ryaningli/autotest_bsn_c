@@ -1,7 +1,6 @@
 from time import strftime
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
-import page
 from base.get_logger import GetLogger
 
 # 获取日志类实例化对象
@@ -18,6 +17,11 @@ class Base:
     def base_find(self, loc,  timeout=30, poll=0.5):
         log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
         return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(lambda x: x.find_element(*loc))
+
+    # 查找多个元素封装（默认超时时间30s，每0.5秒刷新寻找一次）
+    def base_find_elements(self, loc,  timeout=30, poll=0.5):
+        log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
+        return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(lambda x: x.find_elements(*loc))
 
     # 点击元素方法封装
     def base_click(self, loc):
@@ -66,7 +70,9 @@ class Base:
             log.info('元素:{} 未被选中'.format(loc))
             return False
 
-    # 判断下拉框是否包含指定选项
+    '''下面三个关于下拉框dropdown的方法专用为tag名为select的标准下拉框'''
+
+    # 判断下拉框是否包含指定选项（准备舍弃此方法，没必要啊）
     def base_dropdown_is_have_option(self, loc, value):
         if value in self.base_get_text(loc):
             log.info('判断下拉框"{}"所有选项包含"{}"'.format(loc, value))
@@ -96,10 +102,43 @@ class Base:
         if select_method == 'value':
             sl.select_by_value(value)
 
-    # 回到首页
-    def base_index(self):
-        log.info('回到首页:{}'.format(page.URL))
-        self.driver.get(page.URL)
+    '''下面三个关于下拉框dropdown的方法专用为tag名为input的非标准下拉框'''
+
+    # 获取下拉框所有选项（点击下拉框箭头打开选项，获取选项文本，再次点击下拉框箭头关闭选项。参数分别为下拉框箭头和选项元素）
+    def base_dropdown_input_get_options(self, arrow_loc, options_loc):
+        self.base_click(arrow_loc)
+        text = self.base_get_text(options_loc)
+        self.base_click(arrow_loc)
+        options_list = text.split('\n')
+        log.info('下拉框"{}"所有选项为"{}"，共{}个'.format(options_loc, options_list, len(options_list)))
+        return options_list
+
+    # 获取当前下拉框选项（点击下拉框箭头展开选项，获取多个选项元素，遍历元素判断if 'selected' in class的属性值里，点击下箭头关闭选项）
+    def base_dropdown_input_get_current_option(self, arrow_loc, options):
+        self.base_click(arrow_loc)
+        elements = self.base_find_elements(options)
+        log.info('遍历多个元素"{}"，判断每个元素的class属性值里是否包含"selected"'.format(options))
+
+        for element in elements:
+            if 'selected' in element.get_attribute('class'):
+                self.base_click(arrow_loc)
+                element_text = element.text
+                log.info('判断成功，遍历结束。元素"{}"的class属性值包含"selected"，当前下拉框选项为"{}"'.format(element, element_text))
+                return element_text
+
+        log.info('遍历结束，没有元素的class属性值包含"selected"，当前选项为空')
+        self.base_click(arrow_loc)
+
+    # 下拉框选择方法封装（先点击下拉框的下箭头，展开下拉框，再点击指定选项。此方法的两个参数分别对应下拉框箭头和要点击的选项元素）
+    def base_dropdown_input_select(self, arrow_loc, option_loc):
+        log.info('开始在下拉框"{}"中选择选项"{}"'.format(arrow_loc, option_loc))
+        self.base_click(arrow_loc)
+        self.base_click(option_loc)
+
+    # 前往指定页面
+    def base_go_to_page(self, page_url):
+        log.info('前往指定页面:{}'.format(page_url))
+        self.driver.get(page_url)
 
     # 切换Frame表单
     def base_switch_frame(self, frame_id):
@@ -141,3 +180,7 @@ class Base:
         image_path = '../image/{}.png'.format(strftime('%Y-%m-%d_%H-%M-%S'))
         log.info('调用截图，文件路径：{}'.format(image_path))
         self.driver.get_screenshot_as_file(image_path)
+
+    # 添加cookie
+    def base_add_cookie(self, cookie):
+        self.driver.add_cookie(cookie)
