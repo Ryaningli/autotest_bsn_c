@@ -1,0 +1,17 @@
+# Windows
+
+
+# Python
+*.py[cod]
+
+# Pycharm
+.idea/
+*/__pycache__/
+
+# Porject
+autotest_bsn_c.log*
+*.log
+temporary*
+image/
+log/
+heima_page/
