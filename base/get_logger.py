@@ -21,7 +21,7 @@ class GetLogger:
 
             # 获取处理器（时间分割，午夜轮换，最多保存30个文件)
             th = logging.handlers.TimedRotatingFileHandler(
-                './log/autotest_bsn_c.log', when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8'
+                '../log/autotest_bsn_c.log', when='MIDNIGHT', interval=1, backupCount=30, encoding='utf-8'
             )
 
             # 获取格式器

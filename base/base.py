@@ -1,7 +1,10 @@
+from asyncio import sleep
 from time import strftime
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 from base.get_logger import GetLogger
+from base.wait_loading import WaitLoading
 
 # 获取日志类实例化对象
 log = GetLogger().get_logger()
@@ -130,10 +133,11 @@ class Base:
         self.base_click(arrow_loc)
 
     # 下拉框选择方法封装（先点击下拉框的下箭头，展开下拉框，再点击指定选项。此方法的两个参数分别对应下拉框箭头和要点击的选项元素）
-    def base_dropdown_input_select(self, arrow_loc, option_loc):
-        log.info('开始在下拉框"{}"中选择选项"{}"'.format(arrow_loc, option_loc))
-        self.base_click(arrow_loc)
-        self.base_click(option_loc)
+    def base_dropdown_input_select(self, locs):
+        log.info('开始在下拉框"{}"中选择选项"{}"'.format(locs[0], locs[1]))
+        self.base_click(locs[0])
+        self.base_loading()
+        self.base_click(locs[1])
 
     # 前往指定页面
     def base_go_to_page(self, page_url):
@@ -184,3 +188,15 @@ class Base:
     # 添加cookie
     def base_add_cookie(self, cookie):
         self.driver.add_cookie(cookie)
+        self.driver.refresh()
+
+    # tab（没必要）
+    def base_push_tab(self, loc):
+        self.base_find(loc).send_keys(Keys.TAB)
+
+    # 等待加载页面
+    def base_loading(self, timeout=20, wait_first=0.3, poll_frequency=0.5):
+        log.info('等待loading加载结束......')
+        WaitLoading(self.driver, timeout=timeout, wait_first=wait_first, poll_frequency=poll_frequency).until_not(
+            lambda x: x.find_element_by_css_selector('.el-loading-text')
+        )

@@ -7,11 +7,11 @@ class GetDriver:
 
     # 获取driver
     @classmethod
-    def get_driver(cls):
+    def get_driver(cls, url=page.URL):
         if cls.driver is None:
             cls.driver = webdriver.Firefox()
             cls.driver.maximize_window()
-            cls.driver.get(page.URL)
+            cls.driver.get(url)
 
         return cls.driver
 
