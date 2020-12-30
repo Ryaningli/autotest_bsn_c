@@ -2,28 +2,18 @@ from selenium.webdriver.common.by import By
 
 URL = 'http://192.168.0.158/login'
 
-news = By.LINK_TEXT, '新闻'
-hao = By.LINK_TEXT, 'hao123'
-baidu_map = By.LINK_TEXT, '地图'
-vid = By.LINK_TEXT, '视频'
-
-dropdown = By.CSS_SELECTOR, '#select'
-
-arrow_loc = By.CSS_SELECTOR, '.el-icon-arrow-up'
-option_loc = By.CSS_SELECTOR, '.el-select-dropdown__list>li:nth-child(1)'
-
-# options = By.CSS_SELECTOR, '.el-select-dropdown__item'
-options = By.XPATH, '/html/body/div[2]/div[1]/div[1]/ul/li'
-new_op = By.XPATH, '/html/body/div[2]/div[1]/div[1]/ul/li[3]'
 
 login_username = By.CSS_SELECTOR, '[name="phone "]'
 login_password = By.CSS_SELECTOR, '[name="password"]'
 login_login_button = By.CSS_SELECTOR, '.loginbtn'
+login_if_success = By.CSS_SELECTOR, '.databox>span'
+login_error_msg = By.CSS_SELECTOR, 'body > div:last-child.el-message.el-message--error'
+login_logout = [(By.CSS_SELECTOR, '.el-icon-caret-bottom'), (By.CSS_SELECTOR, '[style="display: block;"]')]
 
 
 '''以下为创建服务模块的元素'''
-release_create_service_button = By.CSS_SELECTOR, '.addbtn'
-release_input_service_name = By.CSS_SELECTOR, '[placeholder="请填写您的服务名称"]'
+release_create_app_button = By.CSS_SELECTOR, '.addbtn'
+release_input_app_name = By.CSS_SELECTOR, '[placeholder="请填写您的服务名称"]'
 release_frame_type = [(By.CSS_SELECTOR, '.el-select__caret'),
                       (By.CSS_SELECTOR, '.el-select-dropdown__wrap>ul>li')]
 release_step1_next = By.CSS_SELECTOR, '.Btnbox button'

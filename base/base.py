@@ -1,4 +1,3 @@
-from asyncio import sleep
 from time import strftime
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
@@ -40,9 +39,9 @@ class Base:
         el.send_keys(value)
 
     # 获取元素文本信息方法封装
-    def base_get_text(self, loc):
+    def base_get_text(self, loc, timeout=30):
         log.info('获取元素:{}文本'.format(loc))
-        msg = self.base_find(loc).text
+        msg = self.base_find(loc, timeout=timeout).text
         log.info('文本信息:{}'.format(msg))
         return msg
 
@@ -188,6 +187,7 @@ class Base:
     # 添加cookie
     def base_add_cookie(self, cookie):
         self.driver.add_cookie(cookie)
+        log.info('添加cookie {}'.format(cookie))
         self.driver.refresh()
 
     # tab（没必要）

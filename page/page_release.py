@@ -1,5 +1,3 @@
-from time import sleep
-
 import page
 from base.base import Base
 
@@ -21,11 +19,11 @@ class PageRelease(Base):
 
     # 点击创建服务按钮
     def page_click_create_service_button(self):
-        self.base_click(page.release_create_service_button)
+        self.base_click(page.release_create_app_button)
 
     # 输入服务名称
-    def page_input_service_name(self, service_name):
-        self.base_input(page.release_input_service_name, service_name)
+    def page_input_service_name(self, app_name):
+        self.base_input(page.release_input_app_name, app_name)
         self.base_loading()
 
     # 选择框架类型
