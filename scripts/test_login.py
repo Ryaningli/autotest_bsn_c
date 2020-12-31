@@ -3,16 +3,11 @@ from parameterized import parameterized
 from base.get_driver import GetDriver
 from base.get_logger import GetLogger
 from page.page_login import PageLogin
+from tools.get_data_txt import get_data_txt
 
 log = GetLogger().get_logger()
+data = get_data_txt('data_login.txt')
 
-
-data = (
-    ['18815596963', 'abc123', '登录成功', 'True'],
-    ['18815596964', '11111', '密码错误', 'False'],
-    ['18815596960', '11111', '账户为空,请先注册', 'False'],
-    ['18815596963', 'abc123', '登录成功', 'True'],
-)
 
 class TestLogin(unittest.TestCase):
 
@@ -45,7 +40,7 @@ class TestLogin(unittest.TestCase):
         if status == 'False':
             msg = self.login.page_get_error_msg()
             try:
-                self.assertEqual(msg, except_result)
+                self.assertIn(except_result, msg)
             except Exception as e:
                 log.error('错误{}'.format(e))
                 raise e
