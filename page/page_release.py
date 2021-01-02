@@ -67,11 +67,7 @@ class PageRelease(Base):
         self.base_click(page.release_confirm_purchase)
 
     # 业务组合
-    def page_create_service(self, service_name):
-        self.page_input_username()
-        self.page_input_password()
-        self.page_click_login_button()
-
+    def page_create_app(self, service_name):
         self.page_click_create_service_button()
         self.page_input_service_name(service_name)
         self.page_choice_frame_type()

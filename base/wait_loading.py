@@ -23,7 +23,7 @@ IGNORED_EXCEPTIONS = (NoSuchElementException,)  # 调用方法期间忽略的异
 
 
 class WaitLoading(object):
-    def __init__(self, driver, timeout, wait_first, poll_frequency, ignored_exceptions=None):
+    def __init__(self, driver, timeout, poll_frequency, ignored_exceptions=None):
         """Constructor, takes a WebDriver instance and timeout in seconds.
 
            :Args:
@@ -43,7 +43,6 @@ class WaitLoading(object):
         self._driver = driver
         self._timeout = timeout
         self._poll = poll_frequency
-        self._wait_first = wait_first
         # avoid the divide by zero
         if self._poll == 0:
             self._poll = poll_frequency
@@ -63,7 +62,6 @@ class WaitLoading(object):
         """Calls the method provided with the driver as an argument until the \
         return value is False."""
         end_time = time.time() + self._timeout
-        time.sleep(self._wait_first)
         while True:
             try:
                 value = method(self._driver)

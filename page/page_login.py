@@ -1,3 +1,5 @@
+from time import sleep
+
 import page
 from base.base import Base
 
@@ -10,7 +12,8 @@ class PageLogin(Base):
     # 输入密码
     def page_input_password(self, password):
         self.base_input(page.login_password, password)
-        self.base_loading()
+        # self.base_loading()
+        sleep(0.3)
 
     # 点击登录按钮
     def page_click_login_button(self):
@@ -38,3 +41,7 @@ class PageLogin(Base):
         self.page_input_username(username)
         self.page_input_password(password)
         self.page_click_login_button()
+
+    # 登录成功（依赖）
+    def page_login_success(self, username='18815596963', password='abc123'):
+        self.page_login(username, password)

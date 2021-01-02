@@ -1,4 +1,4 @@
-from time import strftime
+from time import strftime, sleep
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
@@ -135,7 +135,7 @@ class Base:
     def base_dropdown_input_select(self, locs):
         log.info('开始在下拉框"{}"中选择选项"{}"'.format(locs[0], locs[1]))
         self.base_click(locs[0])
-        self.base_loading()
+        sleep(0.3)
         self.base_click(locs[1])
 
     # 前往指定页面
@@ -195,8 +195,17 @@ class Base:
         self.base_find(loc).send_keys(Keys.TAB)
 
     # 等待加载页面
-    def base_loading(self, timeout=20, wait_first=0.3, poll_frequency=0.5):
+    def base_loading(self, timeout=20, poll_frequency=0.5):
         log.info('等待loading加载结束......')
-        WaitLoading(self.driver, timeout=timeout, wait_first=wait_first, poll_frequency=poll_frequency).until_not(
-            lambda x: x.find_element_by_css_selector('.el-loading-text')
+
+        # 尝试捕获loading，找到或10s找不到loading则继续下一步
+        try:
+            WebDriverWait(self.driver, timeout=10, poll_frequency=0.1).until(lambda x: x.find_element_by_css_selector('[class^="el-loading"]'))
+        except:
+            pass
+
+        # 等待loading加载结束
+        WaitLoading(self.driver, timeout=timeout, poll_frequency=poll_frequency).until_not(
+            lambda x: x.find_element_by_css_selector('[class^="el-loading"]')
         )
+
