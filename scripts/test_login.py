@@ -24,7 +24,7 @@ class TestLogin(unittest.TestCase):
 
     # 测试方法
     @parameterized.expand(data)
-    def test_login(self, username, password, except_result, status):
+    def test_login(self, username, password, expect_result, status):
         log.info('开始执行测试用例')
         self.login.page_login(username, password)
 
@@ -40,7 +40,7 @@ class TestLogin(unittest.TestCase):
         if status == 'False':
             msg = self.login.page_get_error_msg()
             try:
-                self.assertIn(except_result, msg)
+                self.assertIn(expect_result, msg)
             except Exception as e:
                 log.error('错误{}'.format(e))
                 raise e
