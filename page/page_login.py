@@ -43,5 +43,5 @@ class PageLogin(Base):
         self.page_click_login_button()
 
     # 登录成功（依赖）
-    def page_login_success(self, username='18815596963', password='abc123'):
+    def page_login_success(self, username=page.username, password=page.password):
         self.page_login(username, password)

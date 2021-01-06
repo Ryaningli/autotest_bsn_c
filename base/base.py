@@ -1,4 +1,7 @@
+import random
 from time import strftime, sleep
+
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
@@ -17,12 +20,12 @@ class Base:
 
     # 查找元素封装（默认超时时间30s，每0.5秒刷新寻找一次）
     def base_find(self, loc,  timeout=30, poll=0.5):
-        log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
+        # log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
         return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(lambda x: x.find_element(*loc))
 
     # 查找多个元素封装（默认超时时间30s，每0.5秒刷新寻找一次）
     def base_find_elements(self, loc,  timeout=30, poll=0.5):
-        log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
+        # log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
         return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(lambda x: x.find_elements(*loc))
 
     # 点击元素方法封装
@@ -116,20 +119,26 @@ class Base:
         return options_list
 
     # 获取当前下拉框选项（点击下拉框箭头展开选项，获取多个选项元素，遍历元素判断if 'selected' in class的属性值里，点击下箭头关闭选项）
-    def base_dropdown_input_get_current_option(self, arrow_loc, options):
-        self.base_click(arrow_loc)
-        elements = self.base_find_elements(options)
-        log.info('遍历多个元素"{}"，判断每个元素的class属性值里是否包含"selected"'.format(options))
+    def base_dropdown_input_get_current_option(self, locs, timeout=30):
+        self.base_click(locs[0])
+        try:
+            elements = self.base_find_elements(locs[1], timeout=timeout)
+        except:
+            self.base_click(locs[0])
+            return 0
+
+        log.info('遍历多个元素"{}"，判断每个元素的class属性值里是否包含"selected"'.format(locs[1]))
 
         for element in elements:
             if 'selected' in element.get_attribute('class'):
-                self.base_click(arrow_loc)
                 element_text = element.text
-                log.info('判断成功，遍历结束。元素"{}"的class属性值包含"selected"，当前下拉框选项为"{}"'.format(element, element_text))
+                self.base_click(locs[0])
+                log.info('判断成功，遍历结束，元素"{}"的class属性值包含"selected"，当前下拉框选项为"{}"'.format(element, element_text))
                 return element_text
 
         log.info('遍历结束，没有元素的class属性值包含"selected"，当前选项为空')
-        self.base_click(arrow_loc)
+        self.base_click(locs[0])
+        return 0
 
     # 下拉框选择方法封装（先点击下拉框的下箭头，展开下拉框，再点击指定选项。此方法的两个参数分别对应下拉框箭头和要点击的选项元素）
     def base_dropdown_input_select(self, locs):
@@ -137,6 +146,27 @@ class Base:
         self.base_click(locs[0])
         sleep(0.3)
         self.base_click(locs[1])
+
+    # 下拉框随机选择
+    def base_dropdown_input_random_select(self, locs):
+        log.info('开始在下拉框"{}"中随机选择选项'.format(locs[0]))
+        self.base_click(locs[0])
+        sleep(1)
+        try:
+            els = self.base_find_elements(locs[1], timeout=2)
+            el = random.choice(els)
+            log.info('已随机选择到元素{}'.format(el))
+            el.click()
+            self.base_loading()
+        except:
+            log.info('元素不存在，未选择{}')
+            self.base_click(locs[0])
+
+    # 鼠标悬停
+    def base_mouse_hover(self, loc):
+        log.info('鼠标悬停至{}'.format(loc))
+        mouse = self.base_find(loc)
+        ActionChains(self.driver).move_to_element(mouse).perform()
 
     # 前往指定页面
     def base_go_to_page(self, page_url):
@@ -198,9 +228,9 @@ class Base:
     def base_loading(self, timeout=20, poll_frequency=0.5):
         log.info('等待loading加载结束......')
 
-        # 尝试捕获loading，找到或10s找不到loading则继续下一步
+        # 尝试捕获loading，找到或1s找不到loading则继续下一步
         try:
-            WebDriverWait(self.driver, timeout=10, poll_frequency=0.1).until(lambda x: x.find_element_by_css_selector('[class^="el-loading"]'))
+            WebDriverWait(self.driver, timeout=1, poll_frequency=0.1).until(lambda x: x.find_element_by_css_selector('[class^="el-loading"]'))
         except:
             pass
 

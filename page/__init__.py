@@ -1,8 +1,12 @@
 from selenium.webdriver.common.by import By
 
-# URL = 'http://192.168.0.158/login'
-URL = 'http://www.fjbsn.com/login'
+URL = 'http://192.168.0.158/login'
+# URL = 'http://www.fjbsn.com/login'
 
+'''登录'''
+# 成功登录用的账号密码，供其他模块测试使用
+username = '18815596964'
+password = 'abc123'
 
 login_username = By.CSS_SELECTOR, '[name="phone "]'
 login_password = By.CSS_SELECTOR, '[name="password"]'
@@ -37,3 +41,37 @@ release_node3 = By.CSS_SELECTOR, 'tr:nth-child(3)>td>div>label>span>span'
 release_pay_type = By.CSS_SELECTOR, 'div.mt20.tab :nth-child(2)'
 release_confirm_purchase = By.CSS_SELECTOR, '.el-button.primary'
 release_pay_now = By.CSS_SELECTOR, '.el-button--primary.surebtn'
+
+'''配置升级'''
+# 个人主页我的发布按钮
+config_up_myapp = [(By.CSS_SELECTOR, 'ul>div:nth-child(4)>li>div>i'),
+                    (By.CSS_SELECTOR, 'ul>div:nth-child(4)>li>ul>div:nth-child(1)>a>li')]
+
+# 我的发布服务的配置升级按钮（先悬停再点击）
+config_up_button = [(By.CSS_SELECTOR, '.el-icon-arrow-down.el-icon--right'),
+                    (By.CSS_SELECTOR, 'body>ul>li:nth-child(5)')]
+
+# 配置升级第一步里的城市节点信息（多条，find_elements，为了输出容量和tps价格和当前节点数）
+config_up_city = By.CSS_SELECTOR, 'section>div>div:nth-child(3)>div>div.el-table__body-wrapper>table>tbody>tr'
+
+# 配置升级第一步里的每个城市节点的新增节点数（[0]元素随着遍历而改变，[1]元素为展开下拉框后整个下拉框元素，find_elements，判断class里是否有selected]）
+config_up_new_nodes = [(By.CSS_SELECTOR, 'tbody>tr:nth-child(1)>td>div>div>div>span>span>i'),
+                       (By.CSS_SELECTOR, '[x-placement="bottom-start"]>div>div:nth-child(1)>ul>li')]
+
+# 配置升级第一步里获取当前tps选项
+config_up_get_tps = [(By.CSS_SELECTOR, 'div.adjust > div:nth-child(1) > div > div > div > span > span > i'),
+                     (By.CSS_SELECTOR, 'body > div.el-popper > div.el-scrollbar > div.el-scrollbar__wrap > ul > li')]
+
+# 配置升级第一步里获取当前容量选项
+config_up_get_capacity = [(By.CSS_SELECTOR, 'div.adjust > div:nth-child(2) > div > div > div > span > span > i'),
+                          (By.CSS_SELECTOR, '[x-placement="top-start"]>div>div>ul>li')]
+
+# 配置升级第一步里，获取配置升级前的价格
+config_up_get_old_price = By.CSS_SELECTOR, 'section>div>div.showBox>div:nth-child(1)'
+
+# 配置升级第一步，获取到期时间
+config_up_expired_time = By.CSS_SELECTOR, 'section>div>div.showBox>div:nth-child(3)>span'
+
+
+config_up_test = [(By.CSS_SELECTOR, 'tbody>tr:nth-child(1)>td>div>div>div>span>span>i'),
+                       (By.CSS_SELECTOR, '[x-placement="bottom-start"]>div>div:nth-child(1)>ul>li')]
