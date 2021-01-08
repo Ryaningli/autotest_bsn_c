@@ -15,4 +15,4 @@ class TestReleaseConfigUpgradeCheckMoney(unittest.TestCase):
         GetDriver.quit_driver()
 
     def test_check_money(self):
-        print(self.check_money.page_config_up_check_money())
+        self.check_money.page_config_up_check_money()

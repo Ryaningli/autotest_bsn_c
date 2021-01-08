@@ -140,6 +140,24 @@ class Base:
         self.base_click(locs[0])
         return 0
 
+    # 从多个元素中获取指定元素的文字信息(例如：elements为一个列表，元素class属性包含selected，key='class', value='selected')
+    def base_get_text_by_attribute(self, loc, key='class', value='selected'):
+        log.info('从多个元素中选择属性{}={}的元素')
+        try:
+            elements = self.base_find_elements(loc, timeout=1)
+        except:
+            log.info('元素未找到，返回0')
+            return 0
+
+        for element in elements:
+            if value in element.get_attribute(key):
+                element_text = element.text
+                log.info('判断成功，遍历结束，元素"{}"的class属性值包含"selected"，当前下拉框选项为"{}"'.format(element, element_text))
+                return element_text
+
+        log.info('遍历结束，没有元素的class属性值包含"selected"，当前选项为空，返回0')
+        return 0
+
     # 下拉框选择方法封装（先点击下拉框的下箭头，展开下拉框，再点击指定选项。此方法的两个参数分别对应下拉框箭头和要点击的选项元素）
     def base_dropdown_input_select(self, locs):
         log.info('开始在下拉框"{}"中选择选项"{}"'.format(locs[0], locs[1]))
@@ -151,13 +169,13 @@ class Base:
     def base_dropdown_input_random_select(self, locs):
         log.info('开始在下拉框"{}"中随机选择选项'.format(locs[0]))
         self.base_click(locs[0])
-        sleep(1)
+        sleep(0.3)
         try:
-            els = self.base_find_elements(locs[1], timeout=2)
+            els = self.base_find_elements(locs[1], timeout=1)
             el = random.choice(els)
             log.info('已随机选择到元素{}'.format(el))
             el.click()
-            self.base_loading()
+            sleep(0.3)
         except:
             log.info('元素不存在，未选择{}')
             self.base_click(locs[0])
@@ -209,8 +227,8 @@ class Base:
             raise ValueError('判断失败，所有窗口的title都不包含"{}"'.format(title))
 
     # 截图方法封装
-    def base_get_image(self):
-        image_path = '../image/{}.png'.format(strftime('%Y-%m-%d_%H-%M-%S'))
+    def base_get_image(self, name=''):
+        image_path = '../image/{}.png'.format(strftime('%Y-%m-%d_%H-%M-%S{}'.format(name)))
         log.info('调用截图，文件路径：{}'.format(image_path))
         self.driver.get_screenshot_as_file(image_path)
 
@@ -225,17 +243,17 @@ class Base:
         self.base_find(loc).send_keys(Keys.TAB)
 
     # 等待加载页面
-    def base_loading(self, timeout=20, poll_frequency=0.5):
+    def base_loading(self, css='[class^="el-loading"]', timeout=20, poll_frequency=0.5):
         log.info('等待loading加载结束......')
 
         # 尝试捕获loading，找到或1s找不到loading则继续下一步
         try:
-            WebDriverWait(self.driver, timeout=1, poll_frequency=0.1).until(lambda x: x.find_element_by_css_selector('[class^="el-loading"]'))
+            WebDriverWait(self.driver, timeout=1, poll_frequency=0.1).until(lambda x: x.find_element_by_css_selector(css))
         except:
             pass
 
         # 等待loading加载结束
         WaitLoading(self.driver, timeout=timeout, poll_frequency=poll_frequency).until_not(
-            lambda x: x.find_element_by_css_selector('[class^="el-loading"]')
+            lambda x: x.find_element_by_css_selector(css)
         )
 
