@@ -8,6 +8,22 @@ from base.base import Base
 
 
 class PageReleaseConfigUpgradeCheckMoney(Base):
+
+    def __init__(self, driver):
+        super(PageReleaseConfigUpgradeCheckMoney, self).__init__(driver)
+        self.tps_price = []
+        self.capacity_price = []
+        self.current_node = []
+        self.add_node = []
+        self.tps = 0
+        self.capacity = 0
+        self.pay_type = ''
+        self.old_price = 0
+        self.expired_time = ''
+        self.page_pay_price = 0
+        self.success = 0
+        self.failure = 0
+
     # 点击我的发布
     def page_click_my_release(self):
         self.base_dropdown_input_select(page.config_up_myapp)
@@ -22,6 +38,65 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
         self.base_loading(css='[class="el-table__empty-text"]')
         self.base_loading()
 
+    # 获取静态数据
+    def page_get_static_data(self):
+        self.tps = int(self.base_dropdown_input_get_current_option(page.config_up_tps))     # 当前tps选择
+        self.capacity = int(self.base_dropdown_input_get_current_option(page.config_up_capacity))       # 当前容量选择
+        self.pay_type = self.base_get_text(page.config_up_pay_type)     # 获取包含支付周期的文字
+        self.old_price = float(self.base_get_text(page.config_up_old_price)[1:])    # 上个支付周期的总价格
+        self.expired_time = self.base_get_text(page.config_up_expired_time)     # 到期时间
+
+    # 更新数据，后面就可以运算了
+    def page_update_data(self):
+        els = self.base_find_elements(page.config_up_tps_price)
+        for el in els:
+            self.tps_price.append(float(el.text.split(' ')[1]))     # tps价格列表
+
+        els = self.base_find_elements(page.config_up_capacity_price)
+        for el in els:
+            self.capacity_price.append(float(el.text.split(' ')[1]))    # 容量价格列表
+
+        els = self.base_find_elements(page.config_up_current_node)
+        for el in els:
+            self.current_node.append(int(el.text))  # 当前节点数列表
+
+        if len(self.add_node) == 0:
+            for i in range(len(self.current_node)):
+                self.add_node.append(0)
+
+        self.page_pay_price = float(self.base_get_text(page.config_up_page_pay_price)[1:])      # 页面上的应付价格
+
+    # 计算数据
+    def page_get_calc_price(self):
+        next_price = 0
+        for tp, cp, cn, an in zip(self.tps_price, self.capacity_price, self.current_node, self.add_node):
+            next_price = next_price + (tp + cp * self.capacity) * (cn + an)
+
+        et = datetime.datetime.strptime(self.expired_time, '%Y-%m-%d %H:%M:%S')
+        et_day = et.date()
+        now = datetime.datetime.now()
+        et_stamp = et.timestamp()
+        now_stamp = now.timestamp()
+        day = (et_stamp - now_stamp) / 86400
+        remain_day = math.ceil(day)     # 剩余天数
+
+        ct = None
+        if '年' in self.pay_type:
+            ct = datetime.date(et.year - 1, et.month, et.day)
+
+        if '月' in self.pay_type:
+            if et.month == 1:
+                ct = datetime.date(et.year - 1, 12, et.day)
+            else:
+                ct = datetime.date(et.year, et.month - 1, et.day)
+
+        all_day = (et_day - ct).days       # 支付周期总天数
+
+        a = (next_price * 100 - self.old_price * 100) / all_day   # 日价格*100
+        b = math.ceil(a * 100) / 100       # 向上保留两位小数
+        calc_price = math.ceil(b * remain_day) / 100       # 应付价格（日价格乘以剩余天数）
+        return calc_price
+
     # 随机改动新增节点数
     def page_change_nodes_count(self):
         arrow = page.config_up_new_nodes[0]
@@ -33,14 +108,16 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
             try:
                 ops = self.base_find_elements(options, timeout=1, poll=0.3)
                 op = random.choice(ops)
+                self.add_node.append(int(op.text))
                 op.click()
                 self.base_loading()
             except:
+                self.add_node.append(0)
                 el.click()
 
         self.page_assert_equal()
 
-    # 新增一个城市（返回剩余城市数）
+    # 遍历新增城市（返回剩余城市数）
     def page_add_city(self):
         while True:
             self.base_click(page.config_up_add_city_button)
@@ -58,131 +135,78 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
                 self.base_click(page.config_up_add_city_enter)
                 break
 
-    # 改动tps
+    # 遍历tps
     def page_change_tps(self):
-        self.base_click(page.config_up_get_tps[0])
+        self.base_click(page.config_up_tps[0])
         sleep(0.3)
-        tpses = self.base_find_elements(page.config_up_get_tps[1])
-        self.base_click(page.config_up_get_tps[0])
+        tpses = self.base_find_elements(page.config_up_tps[1])
+        for tps in tpses:
+            if 'is-disabled' or 'selected' in tps.get_attribute('class'):
+                tpses.remove(tps)
+        self.base_click(page.config_up_tps[0])
 
         for tps in tpses:
-            self.base_click(page.config_up_get_tps[0])
+            self.base_click(page.config_up_tps[0])
             sleep(0.3)
-            if 'is-disabled' in tps.get_attribute('class'):
-                self.base_click(page.config_up_get_tps[0])
-                continue
-
-            if 'selected' in tps.get_attribute('class'):
-                self.base_click(page.config_up_get_tps[0])
-                continue
-
+            self.tps = int(tps.text)
             tps.click()
             self.base_loading()
             self.page_change_nodes_count()
 
-    # 获取当前tps
-    def page_get_tps(self):
-        return self.base_dropdown_input_get_current_option(page.config_up_get_tps)
-
-    # 获取当前容量
-    def page_get_capacity(self):
-        capacity = int(self.base_dropdown_input_get_current_option(page.config_up_get_capacity, timeout=1))
-        return capacity
-
-    # 获取支付周期总天数和剩余天数（支付类型，1是年，0是月）
-    def page_get_expired_time(self):
-        msg = self.base_get_text(page.config_up_get_old_price)      # 获取含有支付周期文字的文本
-        expired_time = self.base_get_text(page.config_up_expired_time)
-
-        et = datetime.datetime.strptime(expired_time, '%Y-%m-%d %H:%M:%S')
-        et_day = et.date()
-        now = datetime.datetime.now()
-        et_stamp = et.timestamp()
-        now_stamp = now.timestamp()
-        day = (et_stamp - now_stamp) / 86400
-        remain_day = math.ceil(day)
-
-        # et = datetime.datetime.strptime(expired_time, '%Y-%m-%d').date()
-        # today = datetime.date.today()
-
-        ct = None
-        if '年' in msg:
-            ct = datetime.date(et.year - 1, et.month, et.day)
-
-        if '月' in msg:
-            if et.month == 1:
-                ct = datetime.date(et.year - 1, 12, et.day)
-            else:
-                ct = datetime.date(et.year, et.month - 1, et.day)
-
-        # remain_day = (et - today).days      # 剩余天数
-        all_day = (et_day - ct).days    # 支付周期天数
-        return [all_day, remain_day]
-
-    # 获取页面显示的应付价格
-    def page_get_pay_price(self):
-        pay_price = self.base_get_text(page.config_up_pay_price)
-        return float(pay_price[1:])
-
-    # 获取升级前价格
-    def page_get_old_price(self):
-        price = self.base_get_text(page.config_up_get_old_price)
-        return float(price.split('\n')[1][1:])
-
-    # 获取升级后配置价格
-    def page_get_next_price(self):
-        # 获取所有的节点元素和所有的新增节点下拉框的箭头元素
-        cities = self.base_find_elements(page.config_up_city)
-        arrows = self.base_find_elements(page.config_up_new_nodes[0])
-
-        capacity = self.page_get_capacity()
-        price = 0
-        c = 1
-        for city, arrow in zip(cities, arrows):
-            msg = city.text   # 判断支付类型的msg
-
-            tps_price = float(msg.split('\n')[2].split(' ')[1])     # tps价格
-            capacity_price = float(msg.split('\n')[3].split(' ')[1])        # 容量单价
-            current_nodes = int(msg.split('\n')[4])     # 已有节点数
-
-            arrow.click()   #点击下箭头
+    # 遍历容量
+    def page_change_capacity(self):
+        self.base_click(page.config_up_capacity[0])
+        sleep(0.3)
+        capacities = self.base_find_elements(page.config_up_capacity[1])
+        print(capacities, '总的' * 10)
+        for capacity in capacities:
+            msg = capacity.get_attribute('class')
+            if ('is-disabled' in msg) or ('selected' in msg):
+                print(capacity, '不要的' * 10)
+                capacities.remove(capacity)
+        self.base_click(page.config_up_capacity[0])
+        for capacity in capacities:
+            self.base_click(page.config_up_capacity[0])
             sleep(0.3)
-            add_nodes = int(self.base_get_text_by_attribute(page.config_up_new_nodes[1]))        # 获取被选中的选项，即新增的节点数
-            arrow.click()
-
-            nodes = current_nodes + add_nodes
-            price = price + (tps_price + capacity_price * capacity) * nodes
-
-            c = c + 1
-            # self.base_loading()
-
-        return float('%.2f' % price)
-
-    # 算出应付价格
-    def page_price(self):
-        next_price = self.page_get_next_price()
-        old_price = self.page_get_old_price()
-        days = self.page_get_expired_time()
-        remain_days = days[1]
-
-        a = (next_price * 100 - old_price * 100) / 31   # 日价格*100
-        b = math.ceil(a * 100) / 100       # 向上保留两位小数
-        c = math.ceil(b * remain_days) / 100       # 应付价格（日价格乘以剩余天数）
-
-        return c
+            self.capacity = int(capacity.text)
+            capacity.click()
+            self.base_loading()
+            self.page_change_nodes_count()
 
     # 断言相等
     def page_assert_equal(self):
-        price = self.page_price()
-        pay_price = self.page_get_pay_price()
-        t = f = 0
+        print('--------' * 20)
+        self.page_update_data()
+        calc_price = self.page_get_calc_price()
+        pay_price = self.page_pay_price
         try:
-            assert price == pay_price
-            t = t + 1
+            assert calc_price == pay_price
+            self.success = self.success + 1
+            print('断言成功\n'
+                  '当前tps{}\n'
+                  '当前容量{}\n'
+                  'tps价格{}\n'
+                  '容量价格{}\n'
+                  '当前节点数{}\n'
+                  '新增节点数{}\n'
+                  '页面价格{}\n'
+                  '我算的价格{}\n'.format(self.tps, self.capacity, self.tps_price, self.capacity_price, self.current_node, self.add_node, pay_price, calc_price)
+                  )
         except:
-            self.base_get_image(name='我算的{}'.format(price))
-            f = f + 1
-        return [t, f]
+            self.base_get_image(name='我算的{}不等于{}'.format(calc_price, pay_price))
+            self.failure = self.failure + 1
+            print('断言失败啦啦啦啦啦啦啦\n'
+                  '当前容量{}\n'
+                  'tps价格{}\n'
+                  '容量价格{}\n'
+                  '当前节点数{}\n'
+                  '新增节点数{}\n'
+                  '页面价格{}\n'
+                  '我算的价格{}\n'.format(self.capacity, self.tps_price, self.capacity_price, self.current_node, self.add_node, self.old_price, calc_price))
+        self.tps_price = []
+        self.capacity_price = []
+        self.current_node = []
+        self.add_node = []
 
     # 业务组合
     def page_config_up_check_money(self):
@@ -190,7 +214,14 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
         self.page_click_my_release()
         self.page_click_config_upgrade()
 
+        # 获取静态数据
+        self.page_get_static_data()
+
         self.page_change_nodes_count()
-        self.page_add_city()
-        self.page_change_tps()
+        # self.page_add_city()
+        # self.page_change_tps()
+        self.page_change_capacity()
+
+        print('共检查{}组，成功{}组，失败{}组'.format(self.success + self.failure, self.success, self.failure))
+
 

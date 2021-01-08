@@ -5,7 +5,7 @@ URL = 'http://192.168.0.158/login'
 
 '''登录'''
 # 成功登录用的账号密码，供其他模块测试使用
-username = '18815596963'
+username = '18815596964'
 password = 'abc123'
 
 login_username = By.CSS_SELECTOR, '[name="phone "]'
@@ -45,7 +45,7 @@ release_pay_now = By.CSS_SELECTOR, '.el-button--primary.surebtn'
 '''配置升级'''
 # 个人主页我的发布按钮
 config_up_myapp = [(By.CSS_SELECTOR, 'ul>div:nth-child(4)>li>div>i'),
-                    (By.CSS_SELECTOR, 'ul>div:nth-child(4)>li>ul>div:nth-child(1)>a>li')]
+                   (By.CSS_SELECTOR, 'ul>div:nth-child(4)>li>ul>div:nth-child(1)>a>li')]
 
 # 我的发布服务的配置升级按钮（先悬停再点击）
 config_up_button = [(By.CSS_SELECTOR, '.el-icon-arrow-down.el-icon--right'),
@@ -60,28 +60,38 @@ config_up_add_city_select = By.CSS_SELECTOR, '[aria-label="新增城市节点"]>
 # 新增城市页面，确定按钮
 config_up_add_city_enter = By.CSS_SELECTOR, '.el-button.sureBtn'
 
-# 配置升级第一步里的城市节点信息（多条，find_elements，为了输出容量和tps价格和当前节点数）
-config_up_city = By.CSS_SELECTOR, 'section>div>div:nth-child(3)>div>div.el-table__body-wrapper>table>tbody>tr'
-
-# 配置升级第一步里的每个城市节点的新增节点数
-config_up_new_nodes = [(By.CSS_SELECTOR, 'tbody>tr>td>div>div>div>span>span>i'),
-                       (By.CSS_SELECTOR, '[x-placement$="-start"]>div>div:nth-child(1)>ul>li')]
-
-# 配置升级第一步里获取当前tps选项
-config_up_get_tps = [(By.CSS_SELECTOR, 'div.adjust>div:nth-child(1)>div>div>div>span>span>i'),
-                     (By.CSS_SELECTOR, '[x-placement$="-start"]>div>div>ul>li')]
-
-# 配置升级第一步里获取当前容量选项
-config_up_get_capacity = [(By.CSS_SELECTOR, 'div.adjust > div:nth-child(2) > div > div > div > span > span > i'),
-                          (By.CSS_SELECTOR, '[x-placement$="-start"]>div>div>ul>li')]
-
-# 配置升级第一步里，获取配置升级前的价格
+# 配置升级前的价格
 config_up_get_old_price = By.CSS_SELECTOR, 'section>div>div.showBox>div:nth-child(1)'
 
-# 配置升级第一步，获取到期时间
+# tps价格
+config_up_tps_price = By.CSS_SELECTOR, 'section>div>div:nth-child(3)>div>div.el-table__body-wrapper>table>tbody>tr>td:nth-child(3)'
+
+# 容量价格
+config_up_capacity_price = By.CSS_SELECTOR, 'section>div>div:nth-child(3)>div>div.el-table__body-wrapper>table>tbody>tr>td:nth-child(4)'
+
+# 当前节点数
+config_up_current_node = By.CSS_SELECTOR, 'section>div>div:nth-child(3)>div>div.el-table__body-wrapper>table>tbody>tr>td:nth-child(5)'
+
+# 支付周期
+config_up_pay_type = By.CSS_SELECTOR, 'section>div>div.showBox>div:nth-child(1)>p'
+
+# 上个支付周期总价格
+config_up_old_price = By.CSS_SELECTOR, 'section>div>div.showBox>div:nth-child(1)>span'
+
+# 到期时间
 config_up_expired_time = By.CSS_SELECTOR, 'section>div>div.showBox>div:nth-child(3)>span'
 
-# 配置升级第一步，获取应付价格
-config_up_pay_price = By.CSS_SELECTOR, 'section>div>div>div:nth-child(4)>span'
+# 获取页面上显示的应付价格
+config_up_page_pay_price = By.CSS_SELECTOR, 'section>div>div>div:nth-child(4)>span'
 
+# tps下拉框
+config_up_tps = [(By.CSS_SELECTOR, 'div.adjust>div:nth-child(1)>div>div>div>span>span>i'),
+                     (By.CSS_SELECTOR, '[x-placement$="-start"]>div>div>ul>li')]
 
+# 容量下拉框
+config_up_capacity = [(By.CSS_SELECTOR, 'div.adjust > div:nth-child(2) > div > div > div > span > span > i'),
+                          (By.CSS_SELECTOR, '[x-placement$="-start"]>div>div>ul>li')]
+
+# 每个城市节点的新增节点数
+config_up_new_nodes = [(By.CSS_SELECTOR, 'tbody>tr>td>div>div>div>span>span>i'),
+                       (By.CSS_SELECTOR, '[x-placement$="-start"]>div>div:nth-child(1)>ul>li')]
