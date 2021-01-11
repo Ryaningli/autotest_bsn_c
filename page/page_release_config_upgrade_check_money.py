@@ -141,7 +141,8 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
         sleep(0.3)
         tpses = self.base_find_elements(page.config_up_tps[1])
         for tps in tpses:
-            if 'is-disabled' or 'selected' in tps.get_attribute('class'):
+            msg = tps.get_attribute('class')
+            if ('is-disabled' in msg) or ('selected' in msg):
                 tpses.remove(tps)
         self.base_click(page.config_up_tps[0])
 
@@ -165,6 +166,7 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
                 print(capacity, '不要的' * 10)
                 capacities.remove(capacity)
         self.base_click(page.config_up_capacity[0])
+
         for capacity in capacities:
             self.base_click(page.config_up_capacity[0])
             sleep(0.3)
@@ -218,8 +220,8 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
         self.page_get_static_data()
 
         self.page_change_nodes_count()
-        # self.page_add_city()
-        # self.page_change_tps()
+        self.page_add_city()
+        self.page_change_tps()
         self.page_change_capacity()
 
         print('共检查{}组，成功{}组，失败{}组'.format(self.success + self.failure, self.success, self.failure))
