@@ -127,7 +127,7 @@ class PageConfigUpgradeCheckMoney(Base):
                 els = self.base_find_elements(page.config_up_add_city_select, timeout=2)
                 self.base_click(page.config_up_add_city_select)
                 self.base_click(page.config_up_add_city_enter)
-                sleep(0.3)
+                self.base_loading()
                 self.page_change_nodes_count()
                 if len(els) == 1:
                     break

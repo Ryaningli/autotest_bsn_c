@@ -20,6 +20,6 @@ class TestAppCreate(unittest.TestCase):
         log.info('关闭驱动')
         # GetDriver.quit_driver()
 
-    def test_create_app(self):
+    def test_app_create(self):
         # self.app_create.page_create_app('服务测试00016')
         self.app_create.page_tem()

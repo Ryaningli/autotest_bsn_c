@@ -82,7 +82,7 @@ class PageAppCreate(Base):
         self.base_input(page.release_input_introduction, '这是服务的简介-autotest')
         self.base_find(page.release_input_cover).send_keys(r'C:\Users\shangchain\Desktop\Ryan\autotest_bsn_c\data\document\cover.jpg')
 
-        js = 'document.querySelector("{}").innerText="{}"'.format(page.release_input_desc[1], '这是服务的描述-autotest')
+        js = 'document.querySelector("{}").innerText="{}"'.format(page.release_input_desc, '这是服务的描述-autotest')
         self.driver.execute_script(js)
 
         self.base_click(page.release_add_doc)

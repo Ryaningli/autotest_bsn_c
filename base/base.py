@@ -1,6 +1,7 @@
 import random
 from time import strftime, sleep
 from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from base.get_logger import GetLogger
@@ -19,12 +20,16 @@ class Base:
     # 查找元素封装（默认超时时间30s，每0.5秒刷新寻找一次）
     def base_find(self, loc,  timeout=30, poll=0.5):
         # log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
-        return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(lambda x: x.find_element(*loc))
+        return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(
+            lambda x: x.find_element(By.CSS_SELECTOR, loc)
+        )
 
     # 查找多个元素封装（默认超时时间30s，每0.5秒刷新寻找一次）
     def base_find_elements(self, loc,  timeout=30, poll=0.5):
         # log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
-        return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(lambda x: x.find_elements(*loc))
+        return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(
+            lambda x: x.find_elements(By.CSS_SELECTOR, loc)
+        )
 
     # 点击元素方法封装
     def base_click(self, loc):
@@ -34,7 +39,6 @@ class Base:
     # 输入元素方法封装
     def base_input(self, loc, value):
         el = self.base_find(loc)
-        log.info('对元素:{}实行清空'.format(loc))
         el.clear()
         log.info('向元素:{}输入:{}'.format(loc, value))
         el.send_keys(value)
