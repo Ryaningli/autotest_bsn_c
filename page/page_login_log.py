@@ -5,7 +5,7 @@ from base.base import Base
 class PageLoginLog(Base):
     # 点击登录日志
     def page_click_login_log(self):
-        self.base_dropdown_input_select(page.login_log)
+        self.base_dropdown_select(page.login_log)
 
     # # 获取参考地址文字信息
     # def page_get_address(self):

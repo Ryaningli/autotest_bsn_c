@@ -7,10 +7,10 @@ import page
 from base.base import Base
 
 
-class PageReleaseConfigUpgradeCheckMoney(Base):
+class PageConfigUpgradeCheckMoney(Base):
 
     def __init__(self, driver):
-        super(PageReleaseConfigUpgradeCheckMoney, self).__init__(driver)
+        super(PageConfigUpgradeCheckMoney, self).__init__(driver)
         self.tps_price = []
         self.capacity_price = []
         self.current_node = []
@@ -26,7 +26,7 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
 
     # 点击我的发布
     def page_click_my_release(self):
-        self.base_dropdown_input_select(page.config_up_myapp)
+        self.base_dropdown_select(page.config_up_myapp)
         self.base_loading()
 
     # 点击配置升级
@@ -40,8 +40,8 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
 
     # 获取静态数据
     def page_get_static_data(self):
-        self.tps = int(self.base_dropdown_input_get_current_option(page.config_up_tps))     # 当前tps选择
-        self.capacity = int(self.base_dropdown_input_get_current_option(page.config_up_capacity))       # 当前容量选择
+        self.tps = int(self.base_dropdown_get_current_option(page.config_up_tps))     # 当前tps选择
+        self.capacity = int(self.base_dropdown_get_current_option(page.config_up_capacity))       # 当前容量选择
         self.pay_type = self.base_get_text(page.config_up_pay_type)     # 获取包含支付周期的文字
         self.old_price = float(self.base_get_text(page.config_up_old_price)[1:])    # 上个支付周期的总价格
         self.expired_time = self.base_get_text(page.config_up_expired_time)     # 到期时间
@@ -124,7 +124,7 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
             self.base_loading()
 
             try:
-                els = self.base_find_elements(page.config_up_add_city_select)
+                els = self.base_find_elements(page.config_up_add_city_select, timeout=2)
                 self.base_click(page.config_up_add_city_select)
                 self.base_click(page.config_up_add_city_enter)
                 sleep(0.3)
@@ -132,7 +132,8 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
                 if len(els) == 1:
                     break
             except:
-                self.base_click(page.config_up_add_city_enter)
+                self.base_click(page.config_up_add_city_cancel)
+                sleep(0.3)
                 break
 
     # 遍历tps
@@ -140,18 +141,34 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
         self.base_click(page.config_up_tps[0])
         sleep(0.3)
         tpses = self.base_find_elements(page.config_up_tps[1])
+        max_tps = None
         for tps in tpses:
-            msg = tps.get_attribute('class')
-            if ('is-disabled' in msg) or ('selected' in msg):
-                tpses.remove(tps)
-        self.base_click(page.config_up_tps[0])
+            if 'is-reverse' not in self.base_find(page.config_up_tps[0]).get_attribute('class'):
+                self.base_click(page.config_up_tps[0])
+                sleep(0.3)
 
-        for tps in tpses:
-            self.base_click(page.config_up_tps[0])
-            sleep(0.3)
+            msg = tps.get_attribute('class')
+            if 'is-disabled' in msg:
+                continue
+            if 'selected' in msg:
+                max_tps = tps
+                continue
+
             self.tps = int(tps.text)
             tps.click()
             self.base_loading()
+
+            try:
+                error = self.base_find(page.config_up_error, timeout=1, poll=0.2)
+                assert 'tps数不可用' in error.text
+                self.base_click(page.config_up_tps[0])
+                sleep(0.3)
+                max_tps.click()
+                self.base_loading()
+                break
+            except:
+                max_tps = tps
+
             self.page_change_nodes_count()
 
     # 遍历容量
@@ -159,17 +176,16 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
         self.base_click(page.config_up_capacity[0])
         sleep(0.3)
         capacities = self.base_find_elements(page.config_up_capacity[1])
-        print(capacities, '总的' * 10)
-        for capacity in capacities:
-            msg = capacity.get_attribute('class')
-            if ('is-disabled' in msg) or ('selected' in msg):
-                print(capacity, '不要的' * 10)
-                capacities.remove(capacity)
-        self.base_click(page.config_up_capacity[0])
 
         for capacity in capacities:
-            self.base_click(page.config_up_capacity[0])
-            sleep(0.3)
+            if 'is-reverse' not in self.base_find(page.config_up_capacity[0]).get_attribute('class'):
+                self.base_click(page.config_up_capacity[0])
+                sleep(0.3)
+
+            msg = capacity.get_attribute('class')
+            if ('is-disabled' in msg) or ('selected' in msg):
+                continue
+
             self.capacity = int(capacity.text)
             capacity.click()
             self.base_loading()
@@ -192,19 +208,22 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
                   '当前节点数{}\n'
                   '新增节点数{}\n'
                   '页面价格{}\n'
-                  '我算的价格{}\n'.format(self.tps, self.capacity, self.tps_price, self.capacity_price, self.current_node, self.add_node, pay_price, calc_price)
+                  '我算的价格{}\n'
+                  .format(self.tps, self.capacity, self.tps_price, self.capacity_price, self.current_node, self.add_node, pay_price, calc_price)
                   )
         except:
             self.base_get_image(name='我算的{}不等于{}'.format(calc_price, pay_price))
             self.failure = self.failure + 1
             print('断言失败啦啦啦啦啦啦啦\n'
+                  '当前tps{}\n'
                   '当前容量{}\n'
                   'tps价格{}\n'
                   '容量价格{}\n'
                   '当前节点数{}\n'
                   '新增节点数{}\n'
                   '页面价格{}\n'
-                  '我算的价格{}\n'.format(self.capacity, self.tps_price, self.capacity_price, self.current_node, self.add_node, self.old_price, calc_price))
+                  '我算的价格{}\n'
+                  .format(self.tps, self.capacity, self.tps_price, self.capacity_price, self.current_node, self.add_node, pay_price, calc_price))
         self.tps_price = []
         self.capacity_price = []
         self.current_node = []
@@ -225,5 +244,7 @@ class PageReleaseConfigUpgradeCheckMoney(Base):
         self.page_change_capacity()
 
         print('共检查{}组，成功{}组，失败{}组'.format(self.success + self.failure, self.success, self.failure))
+
+
 
 

@@ -19,7 +19,7 @@ sleep(3)
 driver.base_go_to_page('http://120.78.132.70/service/createservice')
 sleep(3)
 
-driver.base_dropdown_input_select(page.arrow_loc, page.option_loc)
+driver.base_dropdown_select(page.arrow_loc, page.option_loc)
 
 # 获取当前选项
-print(driver.base_dropdown_input_get_current_option(page.arrow_loc, page.options))
+print(driver.base_dropdown_get_current_option(page.arrow_loc, page.options))
