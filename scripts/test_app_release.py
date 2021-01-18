@@ -17,13 +17,13 @@ class TestAppRelease(unittest.TestCase):
 
     def tearDown(self):
         log.info('关闭驱动')
-        # GetDriver.quit_driver()
+        GetDriver.quit_driver()
 
     def test_app_release(self):
-        self.app_release.page_app_release('发一个图hi就欧佩克')
+        self.app_release.page_app_release('测试服务勿动010')
         commit_msg = self.app_release.page_get_commit_msg()
         try:
-            self.assertIn(commit_msg, '已提交')
+            self.assertIn('已提交', commit_msg)
         except AssertionError as e:
             log.error('错误：{}'.format(e))
             raise e

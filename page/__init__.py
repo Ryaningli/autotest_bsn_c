@@ -3,7 +3,7 @@ URL = 'http://192.168.0.158/login'
 
 '''登录'''
 # 成功登录用的账号密码，供其他模块测试使用
-username = '18815596963'
+username = '18815596960'
 password = 'abc123'
 
 login_username = '[name="phone "]'
