@@ -2,7 +2,6 @@ import random
 from time import strftime, sleep
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from base.get_logger import GetLogger
 from base.wait_loading import WaitLoading
@@ -17,30 +16,28 @@ class Base:
         log.info('获取初始化driver对象:{}'.format(driver))
         self.driver = driver
 
-    # 查找元素封装（默认超时时间30s，每0.5秒刷新寻找一次）
+    # 查找元素（默认超时时间30s，每0.5秒刷新寻找一次）
     def base_find(self, loc,  timeout=30, poll=0.5):
-        # log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
         return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(
             lambda x: x.find_element(By.CSS_SELECTOR, loc)
         )
 
-    # 查找多个元素封装（默认超时时间30s，每0.5秒刷新寻找一次）
+    # 查找多个元素（默认超时时间30s，每0.5秒刷新寻找一次）
     def base_find_elements(self, loc,  timeout=30, poll=0.5):
-        # log.info('定位元素:{}，超时时间={}s，每{}s刷新一次'.format(loc, timeout, poll))
         return WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll).until(
             lambda x: x.find_elements(By.CSS_SELECTOR, loc)
         )
 
-    # 点击元素方法封装
+    # 点击元素
     def base_click(self, loc):
-        log.info('对元素:{}实行点击'.format(loc))
+        log.info('点击元素{}'.format(loc))
         self.base_find(loc).click()
 
     # 输入元素方法封装
     def base_input(self, loc, value):
+        log.info('向元素:{}输入:{}'.format(loc, value))
         el = self.base_find(loc)
         el.clear()
-        log.info('向元素:{}输入:{}'.format(loc, value))
         el.send_keys(value)
 
     # 获取元素文本信息方法封装
@@ -60,7 +57,7 @@ class Base:
     def base_element_is_exist(self, loc):
         log.info('判断元素 {} 是否存在'.format(loc))
         try:
-            self.base_find(loc, timeout=5)
+            self.base_find(loc, timeout=3)
             log.info('元素查找成功')
             return True
         except:
@@ -78,16 +75,6 @@ class Base:
             return False
 
     '''下面三个关于下拉框dropdown的方法专用为tag名为input的非标准下拉框'''
-
-    # 获取下拉框所有选项（点击下拉框箭头打开选项，获取选项文本，再次点击下拉框箭头关闭选项。参数分别为下拉框箭头和选项元素）
-    def base_dropdown_get_options(self, arrow_loc, options_loc):
-        self.base_click(arrow_loc)
-        text = self.base_get_text(options_loc)
-        self.base_click(arrow_loc)
-        options_list = text.split('\n')
-        log.info('下拉框"{}"所有选项为"{}"，共{}个'.format(options_loc, options_list, len(options_list)))
-        return options_list
-
     # 获取当前下拉框选项（点击下拉框箭头展开选项，获取多个选项元素，遍历元素判断if 'selected' in class的属性值里，点击下箭头关闭选项）
     def base_dropdown_get_current_option(self, locs, timeout=30):
         self.base_click(locs[0])
@@ -196,21 +183,31 @@ class Base:
             log.error('判断失败，所有窗口的title都不包含"{}"'.format(title))
             raise ValueError('判断失败，所有窗口的title都不包含"{}"'.format(title))
 
-    # 截图方法封装
-    def base_get_image(self, name=''):
+    # 截图
+    def base_get_image(self, name='', shot_type=0):
         image_path = '../image/{}.png'.format(strftime('%Y-%m-%d_%H-%M-%S{}'.format(name)))
         log.info('调用截图，文件路径：{}'.format(image_path))
-        self.driver.get_screenshot_as_file(image_path)
+
+        if shot_type == 0:
+            self.driver.get_screenshot_as_file(image_path)
+        elif shot_type == 1:
+            width = self.driver.execute_script(
+                'return Math.max(document.body.scrollWidth, document.body.offsetWidth, document.documentElement.'
+                'clientWidth, document.documentElement.scrollWidth, document.documentElement.offsetWidth);')
+            height = self.driver.execute_script(
+                'return Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.'
+                'clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);')
+            self.driver.set_window_size(width + 100, height + 100)
+            self.driver.get_screenshot_as_file(image_path)
+            self.driver.maximize_window()
+        else:
+            raise ValueError('shot_type只可为0或1')
 
     # 添加cookie
     def base_add_cookie(self, cookie):
         self.driver.add_cookie(cookie)
         log.info('添加cookie {}'.format(cookie))
         self.driver.refresh()
-
-    # tab（没必要）
-    def base_push_tab(self, loc):
-        self.base_find(loc).send_keys(Keys.TAB)
 
     # 等待加载页面
     def base_loading(self, css='[class^="el-loading"]', timeout=20, poll_frequency=0.5):
