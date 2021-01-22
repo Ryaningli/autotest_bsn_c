@@ -17,7 +17,7 @@ class TestAppRelease(unittest.TestCase):
 
     def tearDown(self):
         log.info('关闭驱动')
-        # GetDriver.quit_driver()
+        GetDriver.quit_driver()
 
     def test_app_release(self):
         self.app_release.page_app_release('发一个图hi就欧佩克')

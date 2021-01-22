@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from base.get_logger import GetLogger
 from base.wait_loading import WaitLoading
+from PIL import Image, ImageDraw, ImageFont
 
 # 获取日志类实例化对象
 log = GetLogger().get_logger()
@@ -184,13 +185,13 @@ class Base:
             raise ValueError('判断失败，所有窗口的title都不包含"{}"'.format(title))
 
     # 截图
-    def base_get_image(self, name='', shot_type=0):
+    def base_get_image(self, name='', full_screen=0, text='', position=(), ):
         image_path = '../image/{}.png'.format(strftime('%Y-%m-%d_%H-%M-%S{}'.format(name)))
         log.info('调用截图，文件路径：{}'.format(image_path))
 
-        if shot_type == 0:
+        if full_screen == 0:
             self.driver.get_screenshot_as_file(image_path)
-        elif shot_type == 1:
+        elif full_screen == 1:
             width = self.driver.execute_script(
                 'return Math.max(document.body.scrollWidth, document.body.offsetWidth, document.documentElement.'
                 'clientWidth, document.documentElement.scrollWidth, document.documentElement.offsetWidth);')
@@ -202,6 +203,15 @@ class Base:
             self.driver.maximize_window()
         else:
             raise ValueError('shot_type只可为0或1')
+
+        if text == '':
+            pass
+        else:
+            img = Image.open(image_path)
+            draw = ImageDraw.Draw(img)
+            front = ImageFont.truetype('simhei.ttf', 25)  # 字体大小
+            draw.text(position, text, fill=(84, 139, 84), font=front)  # 文字位置，内容，字体
+            img.save(image_path)
 
     # 添加cookie
     def base_add_cookie(self, cookie):

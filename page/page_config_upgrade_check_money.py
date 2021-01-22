@@ -2,7 +2,6 @@ import datetime
 import math
 import random
 from time import sleep
-
 import page
 from base.base import Base
 
@@ -18,15 +17,24 @@ class PageConfigUpgradeCheckMoney(Base):
         self.tps = 0
         self.capacity = 0
         self.pay_type = ''
-        self.old_price = 0
-        self.expired_time = ''
-        self.page_pay_price = 0
+        self.old_price = 0  # 页面显示的这个周期的总价格
+        self.expired_time = ''  # 过期时间
+        self.page_pay_price = 0     # 页面显示的此次支付金额
+        self.next_price = 0     # 程序计算的下个周期的总价格
+        self.remain_day = 0
+        self.all_day = 0
         self.success = 0
         self.failure = 0
 
     # 点击我的发布
     def page_click_my_release(self):
         self.base_dropdown_select(page.config_up_myapp)
+        self.base_loading()
+
+    # 搜索指定服务
+    def page_get_app(self, app_name):
+        self.base_input(page.release_app_name_search, app_name)
+        self.base_click(page.release_app_search_button)
         self.base_loading()
 
     # 点击配置升级
@@ -71,6 +79,7 @@ class PageConfigUpgradeCheckMoney(Base):
         next_price = 0
         for tp, cp, cn, an in zip(self.tps_price, self.capacity_price, self.current_node, self.add_node):
             next_price = next_price + (tp + cp * self.capacity) * (cn + an)
+        self.next_price = next_price
 
         et = datetime.datetime.strptime(self.expired_time, '%Y-%m-%d %H:%M:%S')
         et_day = et.date()
@@ -79,6 +88,7 @@ class PageConfigUpgradeCheckMoney(Base):
         now_stamp = now.timestamp()
         day = (et_stamp - now_stamp) / 86400
         remain_day = math.ceil(day)     # 剩余天数
+        self.remain_day = remain_day
 
         ct = None
         if '年' in self.pay_type:
@@ -91,6 +101,7 @@ class PageConfigUpgradeCheckMoney(Base):
                 ct = datetime.date(et.year, et.month - 1, et.day)
 
         all_day = (et_day - ct).days       # 支付周期总天数
+        self.all_day = all_day
 
         a = (next_price * 100 - self.old_price * 100) / all_day   # 日价格*100
         b = math.ceil(a * 100) / 100       # 向上保留两位小数
@@ -102,18 +113,27 @@ class PageConfigUpgradeCheckMoney(Base):
         arrow = page.config_up_new_nodes[0]
         options = page.config_up_new_nodes[1]
         els = self.base_find_elements(arrow)
+        # for el in els:
+        #     el.click()
+        #     sleep(0.3)
+        #     try:
+        #         ops = self.base_find_elements(options, timeout=1, poll=0.3)
+        #         op = random.choice(ops)
+        #         self.add_node.append(int(op.text))
+        #         op.click()
+        #         self.base_loading()
+        #     except:
+        #         self.add_node.append(0)
+        #         el.click()
+
         for el in els:
             el.click()
             sleep(0.3)
-            try:
-                ops = self.base_find_elements(options, timeout=1, poll=0.3)
-                op = random.choice(ops)
-                self.add_node.append(int(op.text))
-                op.click()
-                self.base_loading()
-            except:
-                self.add_node.append(0)
-                el.click()
+            ops = self.base_find_elements(options, timeout=1, poll=0.3)
+            op = random.choice(ops)
+            self.add_node.append(int(op.text))
+            op.click()
+            self.base_loading()
 
         self.page_assert_equal()
 
@@ -141,7 +161,7 @@ class PageConfigUpgradeCheckMoney(Base):
         self.base_click(page.config_up_tps[0])
         sleep(0.3)
         tpses = self.base_find_elements(page.config_up_tps[1])
-        max_tps = None
+        init_tps = 0
         for tps in tpses:
             if 'is-reverse' not in self.base_find(page.config_up_tps[0]).get_attribute('class'):
                 self.base_click(page.config_up_tps[0])
@@ -151,25 +171,32 @@ class PageConfigUpgradeCheckMoney(Base):
             if 'is-disabled' in msg:
                 continue
             if 'selected' in msg:
-                max_tps = tps
+                init_tps = int(tps.text)
                 continue
 
             self.tps = int(tps.text)
+            if self.tps == 300:
+                sleep(5)
             tps.click()
             self.base_loading()
 
             try:
                 error = self.base_find(page.config_up_error, timeout=1, poll=0.2)
                 assert 'tps数不可用' in error.text
-                self.base_click(page.config_up_tps[0])
-                sleep(0.3)
-                max_tps.click()
-                self.base_loading()
+                self.tps = init_tps
                 break
             except:
-                max_tps = tps
+                pass
 
             self.page_change_nodes_count()
+
+            try:
+                error = self.base_find(page.config_up_error, timeout=1, poll=0.2)
+                assert 'tps数不可用' in error.text
+                self.tps = init_tps
+                break
+            except:
+                pass
 
     # 遍历容量
     def page_change_capacity(self):
@@ -209,10 +236,24 @@ class PageConfigUpgradeCheckMoney(Base):
                   '新增节点数{}\n'
                   '页面价格{}\n'
                   '我算的价格{}\n'
-                  .format(self.tps, self.capacity, self.tps_price, self.capacity_price, self.current_node, self.add_node, pay_price, calc_price)
+                  .format(self.tps, self.capacity, self.tps_price, self.capacity_price,
+                          self.current_node, self.add_node, pay_price, calc_price)
                   )
         except:
-            self.base_get_image(name='我算的{}不等于{}'.format(calc_price, pay_price))
+            img_text = '当前tps:{}\n' \
+                       '当前容量：{}\n' \
+                       'tps单价：{}\n' \
+                       '容量单价：{}\n' \
+                       '当前节点数：{}\n' \
+                       '新增节点数：{}\n' \
+                       '周期总天数：{}\n' \
+                       '周期剩余天数：{}\n' \
+                       '升级后周期费用：{}\n' \
+                       '支付金额计算结果：{}\n'.format(
+                        self.tps, self.capacity, self.tps_price, self.capacity_price, self.current_node,
+                        self.add_node, self.all_day, self.remain_day, self.next_price, calc_price
+            )
+            self.base_get_image(full_screen=1, text=img_text, position=(10, 500))
             self.failure = self.failure + 1
             print('断言失败啦啦啦啦啦啦啦\n'
                   '当前tps{}\n'
@@ -223,16 +264,18 @@ class PageConfigUpgradeCheckMoney(Base):
                   '新增节点数{}\n'
                   '页面价格{}\n'
                   '我算的价格{}\n'
-                  .format(self.tps, self.capacity, self.tps_price, self.capacity_price, self.current_node, self.add_node, pay_price, calc_price))
+                  .format(self.tps, self.capacity, self.tps_price, self.capacity_price,
+                          self.current_node, self.add_node, pay_price, calc_price))
         self.tps_price = []
         self.capacity_price = []
         self.current_node = []
         self.add_node = []
 
     # 业务组合
-    def page_config_up_check_money(self):
+    def page_config_up_check_money(self, app_name):
 
         self.page_click_my_release()
+        self.page_get_app(app_name=app_name)
         self.page_click_config_upgrade()
 
         # 获取静态数据

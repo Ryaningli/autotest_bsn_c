@@ -14,12 +14,16 @@ class TestAppCreate(unittest.TestCase):
         log.info('初始化测试程序...')
         self.driver = GetDriver().get_driver()
         self.app_create = PageAppCreate(self.driver)
-        PageLogin(self.driver).page_login_success()
+        PageLogin(self.driver).page_login_success(username='18815596966', password='abc123')
 
     def tearDown(self):
         log.info('关闭驱动')
-        # GetDriver.quit_driver()
+        GetDriver.quit_driver()
 
     def test_app_create(self):
-        # self.app_create.page_create_app('服务测试00016')
-        self.app_create.page_tem()
+        self.app_create.page_create_app('服务测试00016')
+        try:
+            self.assertIn(self.app_create.page_get_pay_result(), '支付成功')
+            self.app_create.page_game_over()
+        except Exception as e:
+            raise e

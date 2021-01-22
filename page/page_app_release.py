@@ -1,6 +1,5 @@
 import random
 from time import sleep
-
 import page
 from base.base import Base
 
@@ -60,19 +59,19 @@ class PageAppRelease(Base):
         self.base_loading()
 
     # 增加功能
-    def page_add_functions(self, value=3):
+    def page_add_functions(self, value=2):
         for i in range(value):
             self.base_click(page.release_add_functions_link)
             sleep(0.3)
             self.base_input(page.release_add_functions_name, '新增功能{}'.format(str(i + 1)))
             self.base_dropdown_select(page.release_add_functions_select_chain_code)
             self.base_dropdown_random_select(page.release_add_functions_func_type)
-            self.base_input(page.release_add_functions_func, 'new_feature_{}'.format(str(i + 1)))
+            self.base_input(page.release_add_functions_func, 'new_function_{}'.format(str(i + 1)))
             self.base_click(page.release_add_functions_enter)
             sleep(0.3)
 
     # 增加角色
-    def page_add_roles(self, value=3):
+    def page_add_roles(self, value=2):
         for i in range(value):
             self.base_click(page.release_add_role_link)
             sleep(0.3)
@@ -109,6 +108,15 @@ class PageAppRelease(Base):
         self.page_click_release()
         self.page_input_data()
         self.page_use_preset_chain_code()
-        self.page_add_functions(3)
-        self.page_add_roles(3)
+        self.page_add_functions()
+        self.page_add_roles()
         self.page_release_commit()
+
+    # 依赖给其他模块使用
+    def page_app_release_for(self):
+        self.page_input_data()
+        self.page_use_preset_chain_code()
+        self.page_add_functions()
+        self.page_add_roles()
+        self.page_release_commit()
+        self.page_click_commit_enter()
