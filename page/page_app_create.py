@@ -18,6 +18,7 @@ class PageAppCreate(Base):
     # 选择框架类型
     def page_choice_frame_type(self):
         self.base_dropdown_select(page.release_frame_type)
+        self.base_loading()
 
     # 点击下一步
     def page_click_step1_next(self):
@@ -62,6 +63,19 @@ class PageAppCreate(Base):
         self.base_click(page.release_pay_now)
         sleep(0.3)
         self.base_click(page.release_pay_now_enter)
+        self.base_loading()
+
+    # 获取支付后提示
+    def page_get_pay_result(self):
+        try:
+            msg = self.base_get_text(page.release_pay_result)
+            return msg
+        except Exception as e:
+            raise e
+
+    # 点击确定
+    def page_game_over(self):
+        self.base_click(page.release_over_enter)
         self.base_loading()
 
     # 点击立即创建服务
@@ -149,9 +163,9 @@ class PageAppCreate(Base):
         self.base_loading()
 
     # 业务组合
-    def page_create_app(self, service_name):
+    def page_create_app(self, app_name):
         self.page_click_create_service_button()
-        self.page_input_service_name(service_name)
+        self.page_input_service_name(app_name)
         self.page_choice_frame_type()
         self.page_click_step1_next()
         self.page_choice_tps()
@@ -162,17 +176,7 @@ class PageAppCreate(Base):
         self.page_click_confirm_purchase_button()
         self.page_click_pay_now()
 
+    # 依赖给其他模块使用
+    def page_create_app_for(self, app_name):
+        self.page_create_app(app_name)
         self.page_click_create_app_now()
-        self.page_input_data()
-
-    def page_tem(self):
-        self.driver.get('http://192.168.0.158/service/uploadservice?type=1&appTypeName=Fabric-secp256r1-1.4.3&appInfoId=12327&frameType=fabric&payType=1')
-        self.driver.refresh()
-        sleep(2)
-        self.page_input_data()
-        self.page_use_preset_chain_code()
-        self.page_add_functions(3)
-        self.page_add_roles(3)
-        self.page_release_commit()
-        print(self.page_get_commit_msg())
-        self.page_click_commit_enter()

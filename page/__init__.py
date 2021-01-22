@@ -46,6 +46,8 @@ release_pay_types = 'div.mt20.tab>span'
 release_confirm_purchase = '.el-button.primary'
 release_pay_now = '.el-button--primary.surebtn'
 release_pay_now_enter = '[aria-label="订单支付"]>div:nth-child(3)>span>button:nth-child(2)'
+release_pay_result = '[aria-label="订单支付"]>div:nth-child(2)>div>h2'
+release_over_enter = ' section>div>div:nth-child(8)>div>div>span>button.el-button--primary'
 release_create_app_now = '[aria-label="订单支付"]>div:nth-child(2)>div>button'
 release_app_type = ['form>div:nth-child(2)>div>div>div>span>span>i',
                     '[x-placement$="-start"]>div>div>ul>li']

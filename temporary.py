@@ -1,25 +1,27 @@
-from time import sleep
-from selenium.webdriver.common.by import By
+import datetime
+import math
 
-import page
-from base.get_driver import GetDriver
-from base.base import Base
+expired_time = '2022-03-31 15:10:58'
+pay_type = '月'
 
+et = datetime.datetime.strptime(expired_time, '%Y-%m-%d %H:%M:%S')
+et_day = et.date()
+now = datetime.datetime.now()
+et_stamp = et.timestamp()
+now_stamp = now.timestamp()
+day = (et_stamp - now_stamp) / 86400
+remain_day = math.ceil(day)  # 剩余天数
 
-driver = GetDriver().get_driver()
-driver = Base(driver)
+ct = None
+if '年' in pay_type:
+      ct = datetime.date(et.year - 1, et.month, et.day)
 
-driver.base_input((By.CSS_SELECTOR, '[placeholder="请输入账号"]'), '18815596963')
-driver.base_input((By.CSS_SELECTOR, '[placeholder="请输入密码"]'), 'abc123')
-driver.base_click((By.XPATH, '/html/body/div/div/div[2]/div/div/div/div[2]/form/div/button/span'))
-sleep(3)
+if '月' in pay_type:
+      if et.month == 1:
+            ct = datetime.date(et.year - 1, 12, et.day)
+      else:
+            ct = datetime.date(et.year, et.month - 1, et.day)
 
-# driver.base_add_cookie({"name": "Admin-Token", "value": "574a4050535b5744575f5041505f5f56495e5045465b"})
+all_day = (et_day - ct).days  # 支付周期总天数
 
-driver.base_go_to_page('http://120.78.132.70/service/createservice')
-sleep(3)
-
-driver.base_dropdown_select(page.arrow_loc, page.option_loc)
-
-# 获取当前选项
-print(driver.base_dropdown_get_current_option(page.arrow_loc, page.options))
+print(all_day, remain_day)
