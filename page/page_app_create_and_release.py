@@ -15,5 +15,5 @@ class PageAppCreateAndRelease(Base):
 
     # 回到个人主页
     def page_get_home_page(self):
-        self.driver.get('http://192.168.0.158/homepage/homepage')
+        self.driver.get('http://192.168.50.181/homepage/homepage')
         self.base_loading()

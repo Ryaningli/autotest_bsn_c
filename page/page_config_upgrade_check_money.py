@@ -10,21 +10,23 @@ class PageConfigUpgradeCheckMoney(Base):
 
     def __init__(self, driver):
         super(PageConfigUpgradeCheckMoney, self).__init__(driver)
-        self.tps_price = []
-        self.capacity_price = []
-        self.current_node = []
-        self.add_node = []
-        self.tps = 0
-        self.capacity = 0
-        self.pay_type = ''
+        self.node_name = []     # 城市节点名称列表
+        self.flow_price = []    # 数据流量价格列表
+        self.tps_price = []     # tps价格列表
+        self.capacity_price = []    # 容量价格列表
+        self.current_node = []      # 已有节点数列表
+        self.add_node = []      # 新增节点数列表
+        self.tps = 0       # 当前tps选择值
+        self.capacity = 0   # 当前容量选择值
+        self.pay_type = ''      # 支付类型
         self.old_price = 0  # 页面显示的这个周期的总价格
-        self.expired_time = ''  # 过期时间
-        self.page_pay_price = 0     # 页面显示的此次支付金额
+        self.expired_time = ''    # 过期时间
+        self.page_pay_price = 0    # 页面显示的此次支付金额
         self.next_price = 0     # 程序计算的下个周期的总价格
-        self.remain_day = 0
-        self.all_day = 0
-        self.success = 0
-        self.failure = 0
+        self.remain_day = 0     # 周期剩余天数
+        self.all_day = 0    # 周期总天数
+        self.success = 0    # 断言成功次数
+        self.failure = 0    # 断言失败次数
 
     # 点击我的发布
     def page_click_my_release(self):
@@ -56,23 +58,36 @@ class PageConfigUpgradeCheckMoney(Base):
 
     # 更新数据，后面就可以运算了
     def page_update_data(self):
-        els = self.base_find_elements(page.config_up_tps_price)
+        els = self.base_find_elements(page.config_up_node_name)     # 城市节点名列表
         for el in els:
-            self.tps_price.append(float(el.text.split(' ')[1]))     # tps价格列表
+            self.node_name.append(el.text)
 
-        els = self.base_find_elements(page.config_up_capacity_price)
+        els = self.base_find_elements(page.config_up_flow_price)       # 流量价格列表
         for el in els:
-            self.capacity_price.append(float(el.text.split(' ')[1]))    # 容量价格列表
+            self.flow_price.append(float(el.text))
 
-        els = self.base_find_elements(page.config_up_current_node)
+        els = self.base_find_elements(page.config_up_tps_price)     # tps价格列表
         for el in els:
-            self.current_node.append(int(el.text))  # 当前节点数列表
+            self.tps_price.append(float(el.text.split(' ')[1]))
+
+        els = self.base_find_elements(page.config_up_capacity_price)        # 容量价格列表
+        for el in els:
+            self.capacity_price.append(float(el.text.split(' ')[1]))
+
+        els = self.base_find_elements(page.config_up_current_node)      # 当前节点数列表
+        for el in els:
+            self.current_node.append(int(el.text))
 
         if len(self.add_node) == 0:
             for i in range(len(self.current_node)):
                 self.add_node.append(0)
 
         self.page_pay_price = float(self.base_get_text(page.config_up_page_pay_price)[1:])      # 页面上的应付价格
+        print(self.node_name)
+        print(self.flow_price)
+        print(self.tps_price)
+        print(self.capacity_price)
+        print(self.tps, self.pay_type)
 
     # 计算数据
     def page_get_calc_price(self):
@@ -266,6 +281,8 @@ class PageConfigUpgradeCheckMoney(Base):
                   '我算的价格{}\n'
                   .format(self.tps, self.capacity, self.tps_price, self.capacity_price,
                           self.current_node, self.add_node, pay_price, calc_price))
+        self.node_name = []
+        self.flow_price = []
         self.tps_price = []
         self.capacity_price = []
         self.current_node = []

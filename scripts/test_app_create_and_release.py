@@ -38,7 +38,7 @@ class TestAppCreateAndRelease(unittest.TestCase):
         log.info('关闭驱动')
         GetDriver.quit_driver()
 
-    @parameterized.expand(get_data(1))
+    @parameterized.expand(get_data(4))
     def test_app_create_and_release(self, app_name):
         self.app_cr.page_app_create_and_release(app_name)
         self.app_cr.page_get_home_page()

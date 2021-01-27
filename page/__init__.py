@@ -1,4 +1,4 @@
-URL = 'http://192.168.0.158/login'
+URL = 'http://192.168.50.181/login'
 # URL = 'http://www.fjbsn.com/login'
 
 '''登录'''
@@ -111,6 +111,12 @@ config_up_add_city_cancel = '.cancelbtn'
 # 配置升级前的价格
 config_up_get_old_price = 'section>div>div.showBox>div:nth-child(1)'
 
+# 城市节点名
+config_up_node_name = 'section>div>div:nth-child(3)>div>div.el-table__body-wrapper>table>tbody>tr>td:nth-child(1)'
+
+# 流量价格
+config_up_flow_price = 'section>div>div:nth-child(3)>div>div.el-table__body-wrapper>table>tbody>tr>td:nth-child(2)'
+
 # tps价格
 config_up_tps_price = 'section>div>div:nth-child(3)>div>div.el-table__body-wrapper>table>tbody>tr>td:nth-child(3)'
 
@@ -145,4 +151,4 @@ config_up_new_nodes = ['tbody>tr>td>div>div>div>span>span>i',
                        '[x-placement$="-start"]>div>div:nth-child(1)>ul>li']
 
 # 报错弹窗
-config_up_error = 'body > div:last-child.el-message.el-message--error'
+config_up_error = 'body>div:last-child.el-message.el-message--error'
